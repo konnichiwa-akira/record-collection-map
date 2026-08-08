@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>レコードコレクション・マップ</title>
+  <meta name="description" content="Discogsコレクションを初版発売年×ジャンルで可視化し、影響関係をネットワーク表示するローカルWebアプリ" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-dot" title="Record Collection Map"><span></span></div>
+      <button class="nav-item active" data-action="map" title="マップ"><span class="nav-icon">⌁</span><span>マップ</span></button>
+      <button class="nav-item" data-action="import" title="CSVを読み込む"><span class="nav-icon">▣</span><span>読込</span></button>
+      <button class="nav-item" data-action="search-focus" title="検索"><span class="nav-icon">⌕</span><span>検索</span></button>
+      <div class="sidebar-spacer"></div>
+      <button class="nav-item" data-action="reset" title="初期データへ戻す"><span class="nav-icon">↺</span><span>初期化</span></button>
+      <div class="avatar">A</div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="topbar">
+        <div class="title-block">
+          <h1>レコードコレクション・マップ</h1>
+          <p>横軸: 初版発売年 / 縦軸: ジャンル / アートワーク + 影響ネットワーク</p>
+        </div>
+        <div class="top-actions">
+          <label class="search-box">
+            <span>⌕</span>
+            <input id="searchInput" type="search" placeholder="アーティスト、アルバム、ジャンルを検索…" autocomplete="off" />
+          </label>
+          <button id="networkToggle" class="pill-button network-on" type="button"><span class="network-glyph">⌘</span> 影響ネットワーク ON</button>
+        </div>
+      </header>
+
+      <section class="stats-row" aria-label="コレクション統計">
+        <div class="stat-card"><span class="stat-icon purple">◉</span><div><small>総レコード数</small><strong id="statTotal">613</strong></div></div>
+        <div class="stat-card"><span class="stat-icon blue">◌</span><div><small>表示中</small><strong id="statVisible">613</strong></div></div>
+        <div class="stat-card"><span class="stat-icon green">◇</span><div><small>ジャンル数</small><strong id="statGenres">8</strong></div></div>
+        <div class="stat-card wide"><span class="stat-icon amber">▤</span><div><small>期間（初版発売年）</small><strong id="statPeriod">1959 – 2024</strong></div></div>
+        <div class="stat-card"><span class="stat-icon violet">⌁</span><div><small>初版年確定</small><strong id="statResolved">–</strong></div></div>
+      </section>
+
+      <section class="toolbar-row">
+        <div id="decadeFilters" class="chips" aria-label="年代フィルター"></div>
+        <div class="toolbar-actions">
+          <button id="enrichButton" class="secondary-button" type="button">初版年・アートワークを補完</button>
+          <span id="enrichStatus" class="status-text"></span>
+        </div>
+      </section>
+
+      <section class="chart-card">
+        <div class="chart-header">
+          <div>
+            <h2>Collection Timeline</h2>
+            <p>点 = 所有レコード / 大きいカード = 代表表示。破線枠は初版年未照合のためCSV年を暫定利用。</p>
+          </div>
+          <div class="chart-mini-actions">
+            <button id="zoomOut" aria-label="縮小">−</button><span id="zoomLabel">100%</span><button id="zoomIn" aria-label="拡大">＋</button>
+          </div>
+        </div>
+
+        <div class="chart-layout">
+          <div class="genre-labels" id="genreLabels"></div>
+          <div class="plot-viewport" id="plotViewport">
+            <div class="plot-canvas" id="plotCanvas">
+              <div class="year-axis" id="yearAxis"></div>
+              <div class="genre-bands" id="genreBands"></div>
+              <svg class="edge-layer" id="edgeLayer" xmlns="http://www.w3.org/2000/svg" aria-label="影響ネットワーク"></svg>
+              <div class="node-layer" id="nodeLayer"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="legend-bar">
+          <div class="legend-title"><strong>影響ネットワーク</strong><span>線をクリックすると根拠を表示</span></div>
+          <div class="legend-group"><span>線の色 = ソースの確からしさ</span><i class="line-sample high"></i>高 <i class="line-sample medium"></i>中 <i class="line-sample low"></i>低</div>
+          <div class="legend-group"><span>線の太さ = 結びつきの強さ</span><i class="weight-sample strong"></i>強 <i class="weight-sample mid"></i>中 <i class="weight-sample weak"></i>弱</div>
+          <div class="legend-note">※ 現在のネットワークは、信頼できる公開ソースの「アーティスト影響関係」をコレクション内の代表アルバムへ対応付けたものを含みます。</div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="detail-panel" id="detailPanel">
+      <div class="detail-empty" id="detailEmpty">
+        <div class="empty-icon">◫</div>
+        <h3>アルバムを選択</h3>
+        <p>アートワークまたは点をクリックすると詳細と影響関係を表示します。</p>
+      </div>
+      <div class="detail-content hidden" id="detailContent">
+        <div class="detail-heading"><span>選択中のアルバム</span><button id="closeDetail">×</button></div>
+        <div class="detail-cover-wrap"><div id="detailCover" class="detail-cover placeholder"></div></div>
+        <h2 id="detailTitle"></h2>
+        <h3 id="detailArtist"></h3>
+        <div id="detailGenre" class="genre-chip"></div>
+        <dl class="meta-list">
+          <div><dt>初版発売年</dt><dd id="detailYear"></dd></div>
+          <div><dt>年データ</dt><dd id="detailYearSource"></dd></div>
+          <div><dt>レーベル</dt><dd id="detailLabel"></dd></div>
+          <div><dt>フォーマット</dt><dd id="detailFormat"></dd></div>
+          <div><dt>Discogs</dt><dd><a id="detailDiscogs" target="_blank" rel="noreferrer">元リリースを開く ↗</a></dd></div>
+        </dl>
+        <div class="detail-section">
+          <h4>このアルバムに接続する影響関係</h4>
+          <div id="relationList" class="relation-list"></div>
+        </div>
+        <div class="detail-section evidence-box hidden" id="evidenceBox">
+          <div class="evidence-top"><h4>選択した線の根拠</h4><span id="evidenceReliability" class="reliability-badge"></span></div>
+          <p id="evidenceRelation" class="evidence-relation"></p>
+          <p id="evidenceNote" class="evidence-note"></p>
+          <div class="evidence-strength"><span>結びつきの強さ</span><div class="strength-track"><i id="strengthFill"></i></div><b id="strengthValue"></b></div>
+          <a id="evidenceLink" target="_blank" rel="noreferrer">ソースを開く ↗</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <input id="csvFileInput" type="file" accept=".csv,text/csv" hidden />
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="data/collection.js"></script>
+  <script src="data/influences.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
