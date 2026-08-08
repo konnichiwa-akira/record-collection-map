@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app-shell">
+  <div class="app-shell" id="appShell">
     <aside class="sidebar">
       <div class="brand-dot" title="Record Collection Map"><span></span></div>
       <button class="nav-item active" data-action="map" title="マップ"><span class="nav-icon">⌁</span><span>マップ</span></button>
@@ -24,14 +24,15 @@
       <header class="topbar">
         <div class="title-block">
           <h1>レコードコレクション・マップ</h1>
-          <p>横軸: 初版発売年 / 縦軸: ジャンル / アートワーク + 影響ネットワーク</p>
+          <p>横軸: 初版発売年 / 縦軸: ジャンル / アートワーク + つながりネットワーク</p>
         </div>
         <div class="top-actions">
           <label class="search-box">
             <span>⌕</span>
             <input id="searchInput" type="search" placeholder="アーティスト、アルバム、ジャンルを検索…" autocomplete="off" />
           </label>
-          <button id="networkToggle" class="pill-button network-on" type="button"><span class="network-glyph">⌘</span> 影響ネットワーク ON</button>
+          <button id="networkToggle" class="pill-button network-on" type="button"><span class="network-glyph">⌘</span> つながり ON</button>
+          <button id="detailToggle" class="pill-button detail-toggle detail-visible" type="button" aria-controls="detailPanel" aria-expanded="true" title="アルバム詳細を非表示にする"><span class="detail-toggle-icon" aria-hidden="true">▤</span><span id="detailToggleLabel">詳細を隠す</span></button>
         </div>
       </header>
 
@@ -68,14 +69,14 @@
             <div class="plot-canvas" id="plotCanvas">
               <div class="year-axis" id="yearAxis"></div>
               <div class="genre-bands" id="genreBands"></div>
-              <svg class="edge-layer" id="edgeLayer" xmlns="http://www.w3.org/2000/svg" aria-label="影響ネットワーク"></svg>
+              <svg class="edge-layer" id="edgeLayer" xmlns="http://www.w3.org/2000/svg" aria-label="影響と直接系譜のつながりネットワーク"></svg>
               <div class="node-layer" id="nodeLayer"></div>
             </div>
           </div>
         </div>
 
         <div class="legend-bar">
-          <div class="legend-title"><strong>影響ネットワーク</strong><span>線をクリックすると根拠を表示</span></div>
+          <div class="legend-title"><strong>つながりネットワーク</strong><span>影響 + 改名・メンバー移行などの直接系譜</span></div>
           <div class="legend-group"><span>線の色 = ソースの確からしさ</span><i class="line-sample high"></i>高 <i class="line-sample medium"></i>中 <i class="line-sample low"></i>低</div>
           <div class="legend-group"><span>線の太さ = 結びつきの強さ</span><i class="weight-sample strong"></i>強 <i class="weight-sample mid"></i>中 <i class="weight-sample weak"></i>弱</div>
           <div class="legend-note">※ 現在のネットワークは、信頼できる公開ソースの「アーティスト影響関係」をコレクション内の代表アルバムへ対応付けたものを含みます。</div>
@@ -83,14 +84,14 @@
       </section>
     </main>
 
-    <aside class="detail-panel" id="detailPanel">
+    <aside class="detail-panel" id="detailPanel" aria-label="選択中のアルバム詳細">
       <div class="detail-empty" id="detailEmpty">
         <div class="empty-icon">◫</div>
         <h3>アルバムを選択</h3>
         <p>アートワークまたは点をクリックすると詳細と影響関係を表示します。</p>
       </div>
       <div class="detail-content hidden" id="detailContent">
-        <div class="detail-heading"><span>選択中のアルバム</span><button id="closeDetail">×</button></div>
+        <div class="detail-heading"><span>選択中のアルバム</span><button id="closeDetail" type="button" aria-label="アルバム詳細を非表示にする" title="詳細を閉じる">×</button></div>
         <div class="detail-cover-wrap"><div id="detailCover" class="detail-cover placeholder"></div></div>
         <h2 id="detailTitle"></h2>
         <h3 id="detailArtist"></h3>
@@ -103,7 +104,7 @@
           <div><dt>Discogs</dt><dd><a id="detailDiscogs" target="_blank" rel="noreferrer">元リリースを開く ↗</a></dd></div>
         </dl>
         <div class="detail-section">
-          <h4>このアルバムに接続する影響関係</h4>
+          <h4>このアルバムに接続する関係</h4>
           <div id="relationList" class="relation-list"></div>
         </div>
         <div class="detail-section evidence-box hidden" id="evidenceBox">

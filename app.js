@@ -21,8 +21,10 @@
   const genreMap = new Map(GENRES.map((g,i)=>[g.name,{...g,index:i}]));
 
   const els = {
+    appShell: document.getElementById('appShell'),
     search: document.getElementById('searchInput'),
     networkToggle: document.getElementById('networkToggle'),
+    detailToggle: document.getElementById('detailToggle'), detailToggleLabel: document.getElementById('detailToggleLabel'),
     filters: document.getElementById('decadeFilters'),
     enrichButton: document.getElementById('enrichButton'),
     enrichStatus: document.getElementById('enrichStatus'),
@@ -48,6 +50,7 @@
   let activeGenre = null;
   let networkEnabled = true;
   let zoom = 1;
+  let detailPanelVisible = window.matchMedia('(min-width: 1181px)').matches;
   let selectedAlbumId = null;
   let selectedEdgeId = null;
   let nodePositions = new Map();
@@ -223,8 +226,19 @@
     if(selectedAlbumId) renderDetail();
   }
 
-  function selectAlbum(id,edgeId){ selectedAlbumId=id;if(edgeId!==undefined&&edgeId!==null)selectedEdgeId=edgeId;renderAll();renderDetail();els.detailPanel.classList.add('open');const a=collection.find(x=>x.id===id);if(a&&!getEnriched(a)) enrichSingle(a,true); }
-  function closeDetail(){selectedAlbumId=null;selectedEdgeId=null;els.detailPanel.classList.remove('open');els.detailContent.classList.add('hidden');els.detailEmpty.classList.remove('hidden');renderAll();}
+  function setDetailPanelVisible(visible,{returnFocus=false}={}){
+    detailPanelVisible=visible;
+    els.appShell.classList.toggle('detail-collapsed',!visible);
+    els.detailPanel.classList.toggle('open',visible);
+    els.detailPanel.setAttribute('aria-hidden',String(!visible));
+    els.detailToggle.setAttribute('aria-expanded',String(visible));
+    els.detailToggle.classList.toggle('detail-visible',visible);
+    els.detailToggleLabel.textContent=visible?'詳細を隠す':'詳細を表示';
+    els.detailToggle.title=visible?'アルバム詳細を非表示にする':'アルバム詳細を表示する';
+    if(returnFocus) els.detailToggle.focus();
+  }
+  function selectAlbum(id,edgeId){ selectedAlbumId=id;if(edgeId!==undefined&&edgeId!==null)selectedEdgeId=edgeId;setDetailPanelVisible(true);renderAll();renderDetail();const a=collection.find(x=>x.id===id);if(a&&!getEnriched(a)) enrichSingle(a,true); }
+  function closeDetail(){setDetailPanelVisible(false,{returnFocus:true});}
 
   function renderDetail(){
     const album=collection.find(a=>a.id===selectedAlbumId);if(!album){els.detailContent.classList.add('hidden');els.detailEmpty.classList.remove('hidden');return;}
@@ -238,7 +252,7 @@
     els.relationList.innerHTML=''; const rels=[];
     INFLUENCES.forEach(e=>{const f=findAlbumForRef(e.from),t=findAlbumForRef(e.to);if(f?.id===album.id||t?.id===album.id) rels.push({edge:e,from:f,to:t});});
     if(!rels.length){const p=document.createElement('div');p.className='relation-item';p.textContent='現在の根拠データには接続がありません。';els.relationList.appendChild(p);return;}
-    rels.forEach(({edge,from,to})=>{const div=document.createElement('div');div.className='relation-item';const direction=from?.id===album.id?'影響を与えた':'影響を受けた';const other=from?.id===album.id?to:from;const a=document.createElement('div');a.className='relation-arrow';a.textContent=`${direction} → ${other?other.artist:'不明'} / ${other?other.title:''}`;const m=document.createElement('div');m.className='relation-meta';const dot=document.createElement('span');dot.className='dot-badge';dot.style.background=edgeColor(edge);const t=document.createElement('span');t.textContent=`${edge.source.publisher} ・ 信頼度 ${Math.round(edge.reliability*100)}% ・ 強さ ${edge.strength.toFixed(1)}`;m.append(dot,t);div.append(a,m);div.addEventListener('click',()=>{selectedEdgeId=edge.id;renderEvidence(edge);renderAll();});els.relationList.appendChild(div);});
+    rels.forEach(({edge,from,to})=>{const div=document.createElement('div');div.className='relation-item';const outgoing=from?.id===album.id;const direction=edge.scope==='lineage'?(outgoing?'直接系譜':'前身・所属元'):(outgoing?'影響を与えた':'影響を受けた');const other=outgoing?to:from;const a=document.createElement('div');a.className='relation-arrow';a.textContent=`${direction} → ${other?other.artist:'不明'} / ${other?other.title:''}`;const m=document.createElement('div');m.className='relation-meta';const dot=document.createElement('span');dot.className='dot-badge';dot.style.background=edgeColor(edge);const t=document.createElement('span');t.textContent=`${edge.scope==='lineage'?'直接系譜':'影響'} ・ ${edge.source.publisher} ・ 信頼度 ${Math.round(edge.reliability*100)}% ・ 強さ ${edge.strength.toFixed(1)}`;m.append(dot,t);div.append(a,m);div.addEventListener('click',()=>{selectedEdgeId=edge.id;renderEvidence(edge);renderAll();});els.relationList.appendChild(div);});
   }
 
   function renderEvidence(edge){
@@ -280,14 +294,17 @@
   }
 
   els.search.addEventListener('input',()=>{query=els.search.value;renderAll();});
-  els.networkToggle.addEventListener('click',()=>{networkEnabled=!networkEnabled;els.networkToggle.classList.toggle('network-on',networkEnabled);els.networkToggle.textContent=networkEnabled?'⌘ 影響ネットワーク ON':'⌘ 影響ネットワーク OFF';renderAll();});
+  els.networkToggle.addEventListener('click',()=>{networkEnabled=!networkEnabled;els.networkToggle.classList.toggle('network-on',networkEnabled);els.networkToggle.textContent=networkEnabled?'⌘ つながり ON':'⌘ つながり OFF';renderAll();});
+  els.detailToggle.addEventListener('click',()=>setDetailPanelVisible(!detailPanelVisible));
   els.enrichButton.addEventListener('click',()=>{if(enrichmentRunning){enrichmentCancel=true;return;}const target=visibleAlbums.slice().sort((a,b)=>(b.featured?1:0)-(a.featured?1:0));runEnrichment(target);});
   els.zoomIn.addEventListener('click',()=>{zoom=Math.min(1.65,Math.round((zoom+.1)*10)/10);renderAll();});els.zoomOut.addEventListener('click',()=>{zoom=Math.max(.65,Math.round((zoom-.1)*10)/10);renderAll();});
   els.closeDetail.addEventListener('click',closeDetail);els.csvFileInput.addEventListener('change',async()=>{const f=els.csvFileInput.files?.[0];if(!f)return;const text=await f.text();const rows=parseCSV(text);if(!rows.length||!('Artist' in rows[0])||!('Title' in rows[0])){toast('Discogs形式のCSVとして読み取れませんでした');return;}collection=makeImported(rows);writeJSON(STORAGE.imported,collection);selectedAlbumId=null;selectedEdgeId=null;query='';decade='all';activeGenre=null;els.search.value='';renderAll();toast(`${collection.length}件を読み込みました`);});
   document.querySelectorAll('.nav-item').forEach(btn=>btn.addEventListener('click',()=>{const a=btn.dataset.action;if(a==='import'){els.csvFileInput.value='';els.csvFileInput.click();}else if(a==='search-focus'){els.search.focus();}else if(a==='reset'){localStorage.removeItem(STORAGE.imported);collection=BUNDLED.map(x=>({...x}));selectedAlbumId=null;selectedEdgeId=null;renderAll();toast('同梱コレクションへ戻しました');}else if(a==='map'){els.plotViewport.scrollTo({left:0,behavior:'smooth'});}}));
   window.addEventListener('resize',()=>renderAll());
+  document.addEventListener('keydown',(event)=>{if(event.key==='Escape'&&detailPanelVisible)closeDetail();});
   els.plotCanvas.addEventListener('click',()=>{selectedEdgeId=null;if(selectedAlbumId){renderEvidence(null);renderEdges(plotDimensions());}});
 
+  setDetailPanelVisible(detailPanelVisible);
   renderAll();
   // Load a small starter batch automatically so real cover art appears without hammering the public API.
   if(!new URLSearchParams(location.search).has('noauto')) setTimeout(()=>{if(autoStarted)return;autoStarted=true;const connected=connectedAlbumKeys();const starter=collection.filter(a=>connected.has(a.id)||a.featured).filter(a=>!getEnriched(a)?.checkedAt).slice(0,10);if(starter.length)runEnrichment(starter,{auto:true});},1200);

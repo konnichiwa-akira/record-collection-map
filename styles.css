@@ -16,3 +16,12 @@
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#191c25;color:#fff;padding:10px 14px;border-radius:9px;font-size:11px;box-shadow:0 8px 26px #0003;transition:.2s;z-index:100}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media(max-width:1180px){.app-shell{grid-template-columns:70px minmax(0,1fr)}.detail-panel{position:fixed;right:0;top:0;width:320px;box-shadow:-12px 0 40px #0002;transform:translateX(105%);transition:transform .2s}.detail-panel.open{transform:translateX(0)}.sidebar{width:70px}.nav-item{width:56px}.stats-row{grid-template-columns:repeat(3,1fr)}.stat-card.wide{grid-column:auto}.topbar{flex-direction:column}.top-actions{width:100%}.search-box{width:100%}.chart-layout{grid-template-columns:156px 1fr}.genre-labels{font-size:10px}}
 @media(max-width:760px){:root{--lane-h:70px;--plot-h:594px}.app-shell{grid-template-columns:1fr}.sidebar{display:none}.main-panel{padding:12px}.title-block h1{font-size:20px}.top-actions{flex-direction:column;align-items:stretch}.stats-row{grid-template-columns:repeat(2,1fr)}.stats-row .stat-card:last-child{display:none}.toolbar-row{align-items:flex-start;flex-direction:column}.chart-layout{grid-template-columns:116px 1fr}.genre-label{padding:0 7px;font-size:9px}.genre-label .genre-icon{display:none}.legend-bar{grid-template-columns:1fr}.legend-note{grid-column:auto}.detail-panel{width:min(92vw,340px)}.chart-header p{display:none}}
+
+.app-shell{transition:grid-template-columns .22s ease}
+.detail-toggle{display:inline-flex;align-items:center;justify-content:center;gap:6px}.detail-toggle:hover{border-color:#9b79ff;color:#6e46ec}.detail-toggle.detail-visible{background:#f7f3ff;border-color:#bca9f7;color:#6847d7}.detail-toggle-icon{font-size:15px}
+.detail-panel{min-width:0;transition:opacity .16s ease,transform .22s ease}.detail-heading button:hover{background:#eeeafd;color:#6847d7}
+
+@media(min-width:1181px){.app-shell.detail-collapsed{grid-template-columns:var(--sidebar-w) minmax(0,1fr) 0}.app-shell.detail-collapsed .detail-panel{opacity:0;pointer-events:none;padding-left:0;padding-right:0;border-left:0;overflow:hidden}}
+@media(max-width:1180px){.detail-panel{opacity:0;pointer-events:none}.detail-panel.open{opacity:1;pointer-events:auto}}
+@media(max-width:760px){.detail-toggle{width:100%}}
+@media(min-width:1181px) and (max-width:1500px){.topbar{flex-direction:column}.top-actions{width:100%}.search-box{width:auto;flex:1}}

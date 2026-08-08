@@ -1,6 +1,6 @@
-# 影響ネットワーク Sources
+# つながりネットワーク Sources
 
-線色はソース信頼度、線幅は結びつき強度を表します。`scope=artist` はアーティスト単位の影響関係をコレクション内の代表アルバムへ対応付けたものです。
+線色はソース信頼度、線幅は結びつき強度を表します。`scope=artist` はアーティスト単位の影響関係をコレクション内の代表アルバムへ対応付けたもの、`scope=lineage` は改名・メンバー移行・ソロ活動などの直接系譜です。
 
 | ID | From | To | Scope | Reliability | Strength | Source |
 |---|---|---|---|---:|---:|---|
@@ -30,6 +30,34 @@
 | inf-024 | Pink Floyd — The Dark Side Of The Moon = 狂気 | David Bowie — Heroes | artist | 91% | 3.4 | [Rock & Roll Hall of Fame: Pink Floyd — Influence](https://rockhall.com/inductees/pink-floyd/) |
 | inf-025 | Pink Floyd — The Dark Side Of The Moon = 狂気 | Radiohead — OK Computer | artist | 91% | 4.1 | [Rock & Roll Hall of Fame: Pink Floyd — Influence](https://rockhall.com/inductees/pink-floyd/) |
 | inf-026 | Prince — 1999 | Bruno Mars — Unorthodox Jukebox | artist | 94% | 3.8 | [Rock & Roll Hall of Fame: Prince — Influence](https://rockhall.com/inductees/prince/) |
+| inf-027 | James Brown — The Payback | Michael Jackson — Off The Wall | artist | 95% | 4.8 | [Rock & Roll Hall of Fame: Michael Jackson — Influence](https://rockhall.com/inductees/michael-jackson/) |
+| inf-028 | Quincy Jones — Body Heat | Michael Jackson — Off The Wall | artist | 95% | 5.0 | [Rock & Roll Hall of Fame: Michael Jackson — Influence](https://rockhall.com/inductees/michael-jackson/) |
+| inf-029 | Stevie Wonder — Innervisions | Michael Jackson — Off The Wall | artist | 95% | 4.2 | [Rock & Roll Hall of Fame: Michael Jackson — Influence](https://rockhall.com/inductees/michael-jackson/) |
+| inf-030 | The Beatles — Sgt. Pepper's Lonely Hearts Club Band | Michael Jackson — Off The Wall | artist | 95% | 3.8 | [Rock & Roll Hall of Fame: Michael Jackson — Influence](https://rockhall.com/inductees/michael-jackson/) |
+| inf-031 | David Bowie — Heroes | Prince — 1999 | artist | 94% | 3.9 | [Rock & Roll Hall of Fame: Prince — Influence](https://rockhall.com/inductees/prince/) |
+| inf-032 | The Jimi Hendrix Experience — Axis: Bold As Love | Prince — 1999 | artist | 94% | 4.4 | [Rock & Roll Hall of Fame: Prince — Influence](https://rockhall.com/inductees/prince/) |
+| inf-033 | Miles Davis — Kind Of Blue | A Tribe Called Quest — The Low End Theory | artist | 95% | 4.3 | [Rock & Roll Hall of Fame: A Tribe Called Quest — Influence](https://rockhall.com/inductees/a-tribe-called-quest/) |
+| inf-034 | Gil Scott-Heron & Brian Jackson — It's Your World | A Tribe Called Quest — The Low End Theory | artist | 95% | 4.0 | [Rock & Roll Hall of Fame: A Tribe Called Quest — Influence](https://rockhall.com/inductees/a-tribe-called-quest/) |
+| inf-035 | Funkadelic — Funkadelic | A Tribe Called Quest — The Low End Theory | artist | 93% | 4.1 | [Rock & Roll Hall of Fame: A Tribe Called Quest — Influence](https://rockhall.com/inductees/a-tribe-called-quest/) |
+| inf-036 | Stevie Wonder — Innervisions | A Tribe Called Quest — The Low End Theory | artist | 95% | 3.9 | [Rock & Roll Hall of Fame: A Tribe Called Quest — Influence](https://rockhall.com/inductees/a-tribe-called-quest/) |
+| inf-037 | De La Soul — 3 Feet High And Rising | A Tribe Called Quest — The Low End Theory | artist | 95% | 4.4 | [Rock & Roll Hall of Fame: A Tribe Called Quest — Influence](https://rockhall.com/inductees/a-tribe-called-quest/) |
+| inf-038 | A Tribe Called Quest — The Low End Theory | Common — Resurrection | artist | 95% | 4.3 | [Rock & Roll Hall of Fame: A Tribe Called Quest — Influence](https://rockhall.com/inductees/a-tribe-called-quest/) |
+| inf-039 | A Tribe Called Quest — The Low End Theory | D'Angelo — Voodoo | artist | 95% | 4.0 | [Rock & Roll Hall of Fame: A Tribe Called Quest — Influence](https://rockhall.com/inductees/a-tribe-called-quest/) |
+| inf-040 | A Tribe Called Quest — The Low End Theory | Erykah Badu — Apple Tree | artist | 95% | 4.0 | [Rock & Roll Hall of Fame: A Tribe Called Quest — Influence](https://rockhall.com/inductees/a-tribe-called-quest/) |
+| inf-041 | A Tribe Called Quest — The Low End Theory | Q-Tip — Amplified | lineage | 98% | 5.0 | [Rock & Roll Hall of Fame: A Tribe Called Quest — Inducted members](https://rockhall.com/inductees/a-tribe-called-quest/) |
+| inf-042 | The Stooges — Raw Power | Iggy Pop — Lust For Life | lineage | 98% | 5.0 | [Rock & Roll Hall of Fame: The Stooges — Inducted members](https://rockhall.com/inductees/stooges/) |
+| inf-043 | Iggy Pop — Lust For Life | Joy Division — Unknown Pleasures | artist | 96% | 4.2 | [Joy Division Official: About Joy Division](https://www.joydivisionofficial.com/aboutus.html) |
+| inf-044 | Yellow Magic Orchestra — Solid State Survivor | Ryuichi Sakamoto — 未来派野郎 | lineage | 98% | 5.0 | [Yellow Magic Orchestra Official: YMO Biography](https://www.ymo.org/biography/) |
+| inf-045 | Talking Heads — Remain In Light | Tom Tom Club — Tom Tom Club | lineage | 98% | 5.0 | [Tom Tom Club Official: Timeline / Biography](https://www.tomtomclub.com/timeline/) |
+| inf-046 | Sex Pistols — Sex Pistols | Public Image Limited — Metal Box | lineage | 98% | 5.0 | [PiL Official: About Public Image Ltd](https://www.pilofficial.com/about/) |
+| inf-047 | New Order — Technique | Electronic — Electronic | lineage | 96% | 4.8 | [Science Museum Group: Bernard Sumner biography](https://collection.sciencemuseumgroup.org.uk/people/ap1966/sumner-bernard) |
+| inf-048 | The Velvet Underground & Nico — The Velvet Underground & Nico | Talking Heads — Remain In Light | artist | 93% | 4.3 | [Rock & Roll Hall of Fame: The Velvet Underground — Hall of Fame essay](https://www.rockhall.com/wp-content/uploads/2024/03/The_Velvet_Underground_1996.pdf) |
+| inf-049 | Earth, Wind & Fire — All 'N All | Prince — 1999 | artist | 92% | 3.9 | [Rock & Roll Hall of Fame: Earth, Wind & Fire — Influence](https://rockhall.com/inductees/earth-wind-and-fire/) |
+| inf-050 | Earth, Wind & Fire — All 'N All | Bruno Mars — Unorthodox Jukebox | artist | 92% | 3.8 | [Rock & Roll Hall of Fame: Earth, Wind & Fire — Influence](https://rockhall.com/inductees/earth-wind-and-fire/) |
+| inf-051 | Earth, Wind & Fire — All 'N All | D'Angelo — Voodoo | artist | 92% | 4.1 | [Rock & Roll Hall of Fame: Earth, Wind & Fire — Influence](https://rockhall.com/inductees/earth-wind-and-fire/) |
+| inf-052 | The Beatles — Sgt. Pepper's Lonely Hearts Club Band | Earth, Wind & Fire — All 'N All | artist | 92% | 3.5 | [Rock & Roll Hall of Fame: Earth, Wind & Fire — Influence](https://rockhall.com/inductees/earth-wind-and-fire/) |
+| inf-053 | Funkadelic — Funkadelic | Earth, Wind & Fire — All 'N All | artist | 92% | 4.0 | [Rock & Roll Hall of Fame: Earth, Wind & Fire — Influence](https://rockhall.com/inductees/earth-wind-and-fire/) |
+| inf-054 | Warsaw — Warsaw | Joy Division — Unknown Pleasures | lineage | 98% | 5.0 | [Joy Division Official: About Joy Division](https://www.joydivisionofficial.com/aboutus.html) |
 
 ## 注記
 
@@ -59,3 +87,31 @@
 - **inf-024**: Rock Hall lists David Bowie among artists influenced by Pink Floyd.
 - **inf-025**: Rock Hall lists Radiohead among artists influenced by Pink Floyd.
 - **inf-026**: Rock Hall lists Bruno Mars among artists influenced by Prince.
+- **inf-027**: Rock Hall lists James Brown among Michael Jackson’s principal influences.
+- **inf-028**: Rock Hall lists Quincy Jones among Michael Jackson’s influences; the collection albums serve as representative artist nodes.
+- **inf-029**: Rock Hall lists Stevie Wonder among Michael Jackson’s influences.
+- **inf-030**: Rock Hall lists the Beatles among Michael Jackson’s influences.
+- **inf-031**: Rock Hall lists David Bowie among Prince’s influences.
+- **inf-032**: Rock Hall lists the Jimi Hendrix Experience among Prince’s influences.
+- **inf-033**: Rock Hall lists Miles Davis among A Tribe Called Quest’s influences.
+- **inf-034**: Rock Hall lists Gil Scott-Heron among A Tribe Called Quest’s influences; the duo album is the representative collection node.
+- **inf-035**: Rock Hall lists Parliament-Funkadelic among A Tribe Called Quest’s influences; Funkadelic is the representative collection node.
+- **inf-036**: Rock Hall lists Stevie Wonder among A Tribe Called Quest’s influences.
+- **inf-037**: Rock Hall lists De La Soul among A Tribe Called Quest’s influences and describes their Native Tongues connection.
+- **inf-038**: Rock Hall lists Common among artists influenced by A Tribe Called Quest.
+- **inf-039**: Rock Hall lists D’Angelo among artists influenced by A Tribe Called Quest.
+- **inf-040**: Rock Hall lists Erykah Badu among artists influenced by A Tribe Called Quest.
+- **inf-041**: Direct personnel lineage: Q-Tip is an inducted member of A Tribe Called Quest and later released solo work.
+- **inf-042**: Direct personnel lineage: Iggy Pop fronted the Stooges before his solo career.
+- **inf-043**: Joy Division’s official biography names Iggy Pop among the band’s formative musical influences.
+- **inf-044**: Direct personnel lineage: YMO’s official biography identifies Ryuichi Sakamoto as a founding member.
+- **inf-045**: Direct personnel lineage: Talking Heads members Chris Frantz and Tina Weymouth created Tom Tom Club in 1981.
+- **inf-046**: Direct personnel lineage: after fronting the Sex Pistols, John Lydon formed Public Image Ltd.
+- **inf-047**: Direct personnel lineage: New Order’s Bernard Sumner formed Electronic with Johnny Marr in 1989.
+- **inf-048**: The Rock Hall essay names Talking Heads among the Velvet Underground’s major artistic disciples.
+- **inf-049**: Rock Hall lists Prince among artists influenced by Earth, Wind & Fire.
+- **inf-050**: Rock Hall lists Bruno Mars among artists influenced by Earth, Wind & Fire.
+- **inf-051**: Rock Hall lists D’Angelo among artists influenced by Earth, Wind & Fire.
+- **inf-052**: Rock Hall lists the Beatles among Earth, Wind & Fire’s influences.
+- **inf-053**: Rock Hall lists Parliament-Funkadelic among Earth, Wind & Fire’s influences; Funkadelic is the representative collection node.
+- **inf-054**: Direct band lineage: the official history records the group’s early Warsaw name before it became Joy Division.
