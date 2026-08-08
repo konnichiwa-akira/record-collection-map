@@ -7,6 +7,10 @@
     cache: 'record-map:enrichment:v1',
     imported: 'record-map:imported:v1',
   };
+  const LOOKUP_VERSION=2;
+  const RETRY_AFTER_MS=6*60*60*1000;
+  const MB_REQUEST_GAP=1100;
+  const MB_BATCH_SIZE=25;
 
   const GENRES = [
     {name:'ワールド / その他', color:'#7c5ce0', bg:'#f7f4ff', icon:'◎'},
@@ -58,6 +62,11 @@
   let enrichmentRunning = false;
   let enrichmentCancel = false;
   let autoStarted = false;
+  let lastMusicBrainzRequest=0;
+  let musicBrainzRequestQueue=Promise.resolve();
+  let artworkFallbackRunning=false;
+  const artworkFallbackQueue=[];
+  const artworkFallbackIds=new Set();
   const minYear = 1955, maxYear = 2026;
   const basePxPerYear = 25;
 
@@ -74,6 +83,14 @@
   function norm(s){ return String(s||'').toLowerCase().replace(/[’]/g,"'").replace(/[“”]/g,'"').replace(/[–—]/g,'-').replace(/[^\p{L}\p{N}]+/gu,' ').trim().replace(/\s+/g,' '); }
   function getGenre(album){ return genreMap.get(album.genre) || genreMap.get('ワールド / その他'); }
   function getEnriched(album){ return cache[album.id] || null; }
+  function coverUrls(album){
+    const c=getEnriched(album);if(!c)return[];
+    return [...new Set([...(Array.isArray(c.coverUrls)?c.coverUrls:[]),c.coverUrl].filter(Boolean))];
+  }
+  function needsEnrichment(album){
+    const c=getEnriched(album);if(!c)return true;if(c.lookupVersion!==LOOKUP_VERSION)return true;if(coverUrls(album).length&&!c.coverMissing)return false;
+    const checked=Date.parse(c.coverFailedAt||c.checkedAt||'');return !Number.isFinite(checked)||Date.now()-checked>RETRY_AFTER_MS;
+  }
   function yearInfo(album){
     const c=getEnriched(album);
     if(c?.firstYear) return {year:Number(c.firstYear), source:'MusicBrainz', resolved:true};
@@ -82,10 +99,20 @@
     return {year:null, source:'未照合', resolved:false};
   }
   function effectiveYear(album){ return yearInfo(album).year || 1985; }
-  function coverUrl(album){ return getEnriched(album)?.coverUrl || null; }
   function albumLabel(album){ return `${album.artist} — ${album.title}`; }
   function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
   function toast(msg){ els.toast.textContent=msg; els.toast.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>els.toast.classList.remove('show'),2500); }
+
+  function fetchMusicBrainz(url){
+    const request=musicBrainzRequestQueue.then(async()=>{
+      const wait=MB_REQUEST_GAP-(Date.now()-lastMusicBrainzRequest);if(wait>0)await sleep(wait);
+      lastMusicBrainzRequest=Date.now();
+      return fetch(url,{headers:{'Accept':'application/json'}});
+    });
+    musicBrainzRequestQueue=request.catch(()=>{});
+    return request;
+  }
+  function uniqueUrls(...groups){return [...new Set(groups.flat().filter(Boolean))];}
 
   function decadeOptions(){ return ['all','1950s','1960s','1970s','1980s','1990s','2000s','2010s','2020s']; }
   function renderDecadeFilters(){
@@ -168,12 +195,42 @@
     els.nodeLayer.appendChild(frag);
   }
 
+  function rememberWorkingCover(album,url){
+    const current=getEnriched(album)||{};if(current.coverUrl===url&&!current.coverMissing)return;
+    cache[album.id]={...current,coverUrl:url,coverUrls:uniqueUrls([url],coverUrls(album)),coverMissing:false};writeJSON(STORAGE.cache,cache);
+  }
+  function queueArtworkFallback(album){
+    const current=getEnriched(album);if(!current||current.titleFallbackAt||artworkFallbackIds.has(album.id))return;
+    artworkFallbackIds.add(album.id);artworkFallbackQueue.push(album);processArtworkFallbackQueue();
+  }
+  async function processArtworkFallbackQueue(){
+    if(artworkFallbackRunning||enrichmentRunning)return;artworkFallbackRunning=true;
+    try{
+      while(artworkFallbackQueue.length){
+        const album=artworkFallbackQueue.shift();artworkFallbackIds.delete(album.id);const current=getEnriched(album)||{};
+        try{
+          const result=await lookupMusicBrainz(album);const resultUrls=uniqueUrls(result.coverUrls||[],result.coverUrl?[result.coverUrl]:[]);
+          cache[album.id]={...current,...result,coverUrl:resultUrls[0]||null,coverUrls:uniqueUrls(resultUrls,coverUrls(album)),coverMissing:!resultUrls.length,titleFallbackAt:new Date().toISOString(),lookupVersion:LOOKUP_VERSION,checkedAt:new Date().toISOString()};
+        }catch(err){
+          cache[album.id]={...current,coverUrl:null,coverMissing:true,titleFallbackAt:new Date().toISOString(),lookupVersion:LOOKUP_VERSION,checkedAt:new Date().toISOString(),error:String(err)};
+        }
+        writeJSON(STORAGE.cache,cache);renderAll();
+      }
+    }finally{artworkFallbackRunning=false;}
+  }
+  function rememberArtworkFailure(album){
+    const current=getEnriched(album)||{};cache[album.id]={...current,coverUrl:null,coverMissing:true,coverFailedAt:new Date().toISOString(),lookupVersion:LOOKUP_VERSION};writeJSON(STORAGE.cache,cache);queueArtworkFallback(album);
+  }
   function buildArtwork(container,album){
-    const url=coverUrl(album);
-    if(url){
-      const img=document.createElement('img');img.loading='lazy';img.alt=`${album.artist} ${album.title} artwork`;img.src=url;
-      img.addEventListener('error',()=>{container.innerHTML='';container.appendChild(makePlaceholder(album));},{once:true});container.appendChild(img);
-    }else container.appendChild(makePlaceholder(album));
+    const entry=getEnriched(album);const urls=entry?.coverMissing?[]:coverUrls(album);
+    if(!urls.length){container.appendChild(makePlaceholder(album));return;}
+    const img=document.createElement('img');img.loading='lazy';img.alt=`${album.artist} ${album.title} artwork`;let index=0;
+    const tryNext=()=>{
+      if(index>=urls.length){container.innerHTML='';container.appendChild(makePlaceholder(album));rememberArtworkFailure(album);return;}
+      img.src=urls[index++];
+    };
+    img.addEventListener('load',()=>rememberWorkingCover(album,img.currentSrc||img.src),{once:true});
+    img.addEventListener('error',tryNext);container.appendChild(img);tryNext();
   }
   function makePlaceholder(album){
     const p=document.createElement('div');p.className='art-placeholder';const h=hash(album.artist+'|'+album.title);const hue=h%360;const hue2=(hue+50+(h%80))%360;p.style.background=`linear-gradient(${35+(h%110)}deg,hsl(${hue} 46% 34%),hsl(${hue2} 62% 58%))`;
@@ -237,7 +294,7 @@
     els.detailToggle.title=visible?'アルバム詳細を非表示にする':'アルバム詳細を表示する';
     if(returnFocus) els.detailToggle.focus();
   }
-  function selectAlbum(id,edgeId){ selectedAlbumId=id;if(edgeId!==undefined&&edgeId!==null)selectedEdgeId=edgeId;setDetailPanelVisible(true);renderAll();renderDetail();const a=collection.find(x=>x.id===id);if(a&&!getEnriched(a)) enrichSingle(a,true); }
+  function selectAlbum(id,edgeId){ selectedAlbumId=id;if(edgeId!==undefined&&edgeId!==null)selectedEdgeId=edgeId;setDetailPanelVisible(true);renderAll();renderDetail();const a=collection.find(x=>x.id===id);if(a&&needsEnrichment(a)) enrichSingle(a,true); }
   function closeDetail(){setDetailPanelVisible(false,{returnFocus:true});}
 
   function renderDetail(){
@@ -263,27 +320,74 @@
   function titleSimilarity(a,b){a=norm(a);b=norm(b);if(a===b)return 1;if(a.includes(b)||b.includes(a))return .82;const A=new Set(a.split(' ').filter(x=>x.length>2)),B=new Set(b.split(' ').filter(x=>x.length>2));if(!A.size||!B.size)return 0;let common=0;A.forEach(x=>{if(B.has(x))common++});return (2*common)/(A.size+B.size);}
   function artistCreditText(rg){try{return (rg['artist-credit']||[]).map(c=>c.name||c.artist?.name||'').join(' ')}catch{return ''}}
 
+  function discogsResources(album){
+    if(!album.releaseId)return[];const id=String(album.releaseId);
+    return [`https://www.discogs.com/release/${id}`,`http://www.discogs.com/release/${id}`];
+  }
+  function discogsIdFromResource(resource){return String(resource||'').match(/discogs\.com\/release\/(\d+)/i)?.[1]||null;}
+  function relationArtworkUrls(entry){
+    const urls=[];
+    for(const relation of entry.relations||[]){
+      const groupId=relation['release-group']?.id||relation.release?.['release-group']?.id;
+      const releaseId=relation.release?.id;
+      if(groupId)urls.push(`https://coverartarchive.org/release-group/${groupId}/front-250`);
+      if(releaseId)urls.push(`https://coverartarchive.org/release/${releaseId}/front-250`);
+    }
+    return uniqueUrls(urls);
+  }
+  async function lookupDiscogsRelationsBatch(albums){
+    const withIds=albums.filter(album=>album.releaseId);if(!withIds.length)return 0;
+    const params=new URLSearchParams({inc:'release-rels+release-group-rels',fmt:'json'});
+    withIds.forEach(album=>discogsResources(album).forEach(resource=>params.append('resource',resource)));
+    const res=await fetchMusicBrainz(`https://musicbrainz.org/ws/2/url?${params.toString()}`);
+    if(!res.ok)throw new Error(`MusicBrainz ${res.status}`);
+    const data=await res.json();const entries=Array.isArray(data.urls)?data.urls:(data.resource?[data]:[]);
+    const byReleaseId=new Map(withIds.map(album=>[String(album.releaseId),album]));const matchedIds=new Set();
+    for(const entry of entries){
+      const album=byReleaseId.get(discogsIdFromResource(entry.resource));const urls=relationArtworkUrls(entry);if(!album||!urls.length||matchedIds.has(album.id))continue;
+      const current=getEnriched(album)||{};
+      cache[album.id]={...current,coverUrl:urls[0],coverUrls:uniqueUrls(urls,coverUrls(album)),coverMissing:false,matchMethod:'discogs-url',lookupVersion:LOOKUP_VERSION,checkedAt:new Date().toISOString()};
+      matchedIds.add(album.id);
+    }
+    if(matchedIds.size)writeJSON(STORAGE.cache,cache);return matchedIds.size;
+  }
   async function lookupMusicBrainz(album){
     const artist=luceneEscape(cleanArtist(album.artist));const title=luceneEscape(album.title);
     const q=`releasegroup:"${title}" AND artist:"${artist}"`;const url=`https://musicbrainz.org/ws/2/release-group/?query=${encodeURIComponent(q)}&fmt=json&limit=5`;
-    const res=await fetch(url,{headers:{'Accept':'application/json'}});if(!res.ok)throw new Error(`MusicBrainz ${res.status}`);const data=await res.json();const groups=data['release-groups']||[];if(!groups.length) return {notFound:true};
+    const res=await fetchMusicBrainz(url);if(!res.ok)throw new Error(`MusicBrainz ${res.status}`);const data=await res.json();const groups=data['release-groups']||[];if(!groups.length)return {notFound:true,lookupVersion:LOOKUP_VERSION};
     let best=null,bestScore=-Infinity;for(const rg of groups){const mbScore=Number(rg.score||0)/100;const ts=titleSimilarity(album.title,rg.title||'');const as=titleSimilarity(cleanArtist(album.artist),artistCreditText(rg));const s=mbScore*.55+ts*.30+as*.15;if(s>bestScore){bestScore=s;best=rg;}}
-    if(!best||bestScore<.52)return {notFound:true,matchScore:Math.round(bestScore*100)};
-    const fr=String(best['first-release-date']||'');const yr=/^\d{4}/.test(fr)?Number(fr.slice(0,4)):null;return {mbid:best.id,firstYear:yr,coverUrl:`https://coverartarchive.org/release-group/${best.id}/front-250`,matchScore:Math.round(bestScore*100),matchedTitle:best.title,matchedArtist:artistCreditText(best),checkedAt:new Date().toISOString()};
+    if(!best||bestScore<.52)return {notFound:true,matchScore:Math.round(bestScore*100),lookupVersion:LOOKUP_VERSION};
+    const fr=String(best['first-release-date']||'');const yr=/^\d{4}/.test(fr)?Number(fr.slice(0,4)):null;const urlForCover=`https://coverartarchive.org/release-group/${best.id}/front-250`;
+    return {mbid:best.id,firstYear:yr,coverUrl:urlForCover,coverUrls:[urlForCover],coverMissing:false,matchMethod:'title-search',matchScore:Math.round(bestScore*100),matchedTitle:best.title,matchedArtist:artistCreditText(best),lookupVersion:LOOKUP_VERSION,checkedAt:new Date().toISOString()};
   }
 
   async function enrichSingle(album,silent=false){
-    if(getEnriched(album)?.checkedAt) return getEnriched(album);
-    try{const result=await lookupMusicBrainz(album);cache[album.id]={...result,checkedAt:new Date().toISOString()};writeJSON(STORAGE.cache,cache);if(!silent)toast(result.notFound?`未一致: ${albumLabel(album)}`:`補完: ${albumLabel(album)}`);if(selectedAlbumId===album.id)renderDetail();return result;}catch(err){if(!silent)toast(`補完失敗: ${err.message}`);return {error:String(err)}}
+    if(!needsEnrichment(album))return getEnriched(album);
+    try{
+      const current=getEnriched(album)||{};const result=await lookupMusicBrainz(album);const resultUrls=uniqueUrls(result.coverUrls||[],result.coverUrl?[result.coverUrl]:[]);
+      cache[album.id]={...current,...result,coverUrl:resultUrls[0]||null,coverUrls:uniqueUrls(resultUrls,coverUrls(album)),coverMissing:!resultUrls.length,lookupVersion:LOOKUP_VERSION,checkedAt:new Date().toISOString()};writeJSON(STORAGE.cache,cache);
+      if(!silent)toast(result.notFound?`未一致: ${albumLabel(album)}`:`補完: ${albumLabel(album)}`);if(selectedAlbumId===album.id)renderDetail();return result;
+    }catch(err){if(!silent)toast(`補完失敗: ${err.message}`);return {error:String(err)}}
   }
 
   async function runEnrichment(list,{auto=false}={}){
     if(enrichmentRunning){enrichmentCancel=true;return;}enrichmentRunning=true;enrichmentCancel=false;els.enrichButton.classList.add('running');els.enrichButton.textContent='補完を停止';
-    const queue=list.filter(a=>!getEnriched(a)?.checkedAt);let done=0,ok=0;const total=queue.length; if(!auto) toast(`${total}件を順次補完します（約1件/秒）`);
-    for(const album of queue){if(enrichmentCancel)break;els.enrichStatus.textContent=`${done}/${total}`;const r=await enrichSingle(album,true);done++;if(r&&!r.error&&!r.notFound)ok++;if(done%5===0||done===total){renderAll();}await sleep(1100);}
-    enrichmentRunning=false;els.enrichButton.classList.remove('running');els.enrichButton.textContent='初版年・アートワークを補完';els.enrichStatus.textContent=enrichmentCancel?`停止 ${done}/${total}`:`完了 ${ok}/${total}`;renderAll(); if(!auto)toast(enrichmentCancel?'補完を停止しました':`補完完了: ${ok}/${total}件`);
+    const queue=list.filter(needsEnrichment);const total=queue.length;let ok=0;
+    if(!total){enrichmentRunning=false;els.enrichButton.classList.remove('running');els.enrichButton.textContent='初版年・アートワークを補完';els.enrichStatus.textContent='最新';return;}
+    if(!auto)toast(`${total}件のジャケットを照合します`);
+    const exactQueue=queue.filter(album=>album.releaseId);let batchProcessed=0;
+    for(let index=0;index<exactQueue.length&&!enrichmentCancel;index+=MB_BATCH_SIZE){
+      const batch=exactQueue.slice(index,index+MB_BATCH_SIZE);
+      try{ok+=await lookupDiscogsRelationsBatch(batch);}catch{}
+      batchProcessed+=batch.length;els.enrichStatus.textContent=`画像照合 ${batchProcessed}/${exactQueue.length}`;renderAll();
+    }
+    const remaining=enrichmentCancel?[]:queue.filter(needsEnrichment);let fallbackDone=0;
+    for(const album of remaining){
+      if(enrichmentCancel)break;els.enrichStatus.textContent=`詳細照合 ${fallbackDone}/${remaining.length}`;const result=await enrichSingle(album,true);fallbackDone++;if(result&&!result.error&&!result.notFound)ok++;if(fallbackDone%5===0||fallbackDone===remaining.length)renderAll();
+    }
+    enrichmentRunning=false;els.enrichButton.classList.remove('running');els.enrichButton.textContent='初版年・アートワークを補完';els.enrichStatus.textContent=enrichmentCancel?`停止 ${ok}/${total}`:`照合 ${ok}/${total}`;renderAll();processArtworkFallbackQueue();
+    if(!auto)toast(enrichmentCancel?'補完を停止しました':`画像照合完了: ${ok}/${total}件`);
   }
-
   function parseCSV(text){
     const rows=[];let row=[],field='',q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c==='"'&&text[i+1]==='"'){field+='"';i++;}else if(c==='"')q=false;else field+=c;}else{if(c==='"')q=true;else if(c===','){row.push(field);field='';}else if(c==='\n'){row.push(field.replace(/\r$/,''));rows.push(row);row=[];field='';}else field+=c;}}if(field.length||row.length){row.push(field);rows.push(row);}if(!rows.length)return[];const head=rows[0].map(x=>x.trim());return rows.slice(1).filter(r=>r.some(Boolean)).map(r=>Object.fromEntries(head.map((h,i)=>[h,r[i]??''])));}
 
@@ -306,6 +410,6 @@
 
   setDetailPanelVisible(detailPanelVisible);
   renderAll();
-  // Load a small starter batch automatically so real cover art appears without hammering the public API.
-  if(!new URLSearchParams(location.search).has('noauto')) setTimeout(()=>{if(autoStarted)return;autoStarted=true;const connected=connectedAlbumKeys();const starter=collection.filter(a=>connected.has(a.id)||a.featured).filter(a=>!getEnriched(a)?.checkedAt).slice(0,10);if(starter.length)runEnrichment(starter,{auto:true});},1200);
+  // Resolve every large representative card automatically; Discogs IDs are batched through MusicBrainz to stay within the public API rate limit.
+  if(!new URLSearchParams(location.search).has('noauto'))setTimeout(()=>{if(autoStarted)return;autoStarted=true;const connected=connectedAlbumKeys();const starter=collection.filter(a=>connected.has(a.id)||a.featured).filter(needsEnrichment);if(starter.length)runEnrichment(starter,{auto:true});},1200);
 })();
