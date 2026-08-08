@@ -118,17 +118,13 @@
   function renderDecadeFilters(){
     els.filters.innerHTML='';
     decadeOptions().forEach(d=>{
-      const b=document.createElement('button'); b.className='chip'+(decade===d?' active':''); b.textContent=d==='all'?'すべて':d;
-      b.addEventListener('click',()=>{decade=d;renderAll();}); els.filters.appendChild(b);
+      const b=document.createElement('button'); b.className='chip'+(decade===d?' active':''); b.textContent=d==='all'?'すべて':d;b.setAttribute('aria-pressed',String(decade===d));b.title=d==='all'?'全期間を均等表示':`${d}を拡大し、前後の年代も残して表示`;
+      b.addEventListener('click',()=>{decade=d;renderAll();requestAnimationFrame(scrollToFocusedDecade);}); els.filters.appendChild(b);
     });
   }
 
   function matchesFilters(a){
-    const yi=yearInfo(a); const y=yi.year;
     if(activeGenre && a.genre!==activeGenre) return false;
-    if(decade!=='all'){
-      const start=Number(decade.slice(0,4)); if(!y || y<start || y>start+9) return false;
-    }
     if(query){
       const hay=norm(`${a.artist} ${a.title} ${a.genre} ${a.label}`); if(!hay.includes(norm(query))) return false;
     }
@@ -148,20 +144,40 @@
   function plotDimensions(){
     const laneH=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-h'))||78;
     const axisH=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--axis-h'))||34;
-    const width=Math.max(1100, Math.round((maxYear-minYear)*basePxPerYear*zoom));
+    const selectedStart=decade==='all'?null:Number(decade.slice(0,4));
+    const focusStart=selectedStart===null?null:Math.max(minYear,selectedStart);
+    const focusEnd=focusStart===null?null:Math.min(maxYear,selectedStart+10);
+    let contextPxPerYear=focusStart===null?basePxPerYear*zoom:Math.max(6,8*zoom);
+    const focusPxPerYear=focusStart===null?contextPxPerYear:Math.max(54,66*zoom);
+    if(focusStart!==null){const contextYears=(focusStart-minYear)+(maxYear-focusEnd);if(contextYears>0)contextPxPerYear=Math.max(contextPxPerYear,(1100-(focusEnd-focusStart)*focusPxPerYear)/contextYears);}
+    const width=focusStart===null?Math.max(1100,Math.round((maxYear-minYear)*contextPxPerYear)):Math.max(1100,Math.round((focusStart-minYear)*contextPxPerYear+(focusEnd-focusStart)*focusPxPerYear+(maxYear-focusEnd)*contextPxPerYear));
     const h=GENRES.length*laneH;
-    return {laneH,axisH,width,height:h};
+    return {laneH,axisH,width,height:h,focusStart,focusEnd,contextPxPerYear,focusPxPerYear};
   }
-  function xForYear(year,d){ return ((Math.max(minYear,Math.min(maxYear,year))-minYear)/(maxYear-minYear))*d.width; }
+  function xForYear(year,d){
+    const y=Math.max(minYear,Math.min(maxYear,year));
+    if(d.focusStart===null)return (y-minYear)*d.contextPxPerYear;
+    if(y<d.focusStart)return (y-minYear)*d.contextPxPerYear;
+    const before=(d.focusStart-minYear)*d.contextPxPerYear;
+    if(y<=d.focusEnd)return before+(y-d.focusStart)*d.focusPxPerYear;
+    return before+(d.focusEnd-d.focusStart)*d.focusPxPerYear+(y-d.focusEnd)*d.contextPxPerYear;
+  }
+  function yearIsFocused(year){return decade==='all'||(year>=Number(decade.slice(0,4))&&year<Number(decade.slice(0,4))+10);}
+  function scrollToFocusedDecade(){
+    const d=plotDimensions();if(d.focusStart===null){els.plotViewport.scrollTo({left:0,behavior:'smooth'});return;}
+    const focusWidth=(d.focusEnd-d.focusStart)*d.focusPxPerYear;const left=Math.max(0,xForYear(d.focusStart,d)-(els.plotViewport.clientWidth-focusWidth)/2);els.plotViewport.scrollTo({left,behavior:'smooth'});
+  }
 
   function renderAxisAndBands(d){
     els.plotCanvas.style.width=d.width+'px';
     els.yearAxis.innerHTML=''; els.genreBands.innerHTML='';
-    for(let y=1955;y<=2025;y+=5){
-      const x=xForYear(y,d); const tick=document.createElement('span');tick.className='year-tick';tick.style.left=x+'px';tick.textContent=y; els.yearAxis.appendChild(tick);
-      const grid=document.createElement('i');grid.className='year-grid';grid.style.left=x+'px';els.genreBands.appendChild(grid);
+    for(let y=minYear;y<=maxYear;y++){
+      const focused=d.focusStart!==null&&y>=d.focusStart&&(y<d.focusEnd||(y===maxYear&&d.focusEnd===maxYear));if(d.focusStart===null?y%5!==0:(!focused&&y%10!==0))continue;
+      const x=xForYear(y,d); const tick=document.createElement('span');tick.className='year-tick'+(focused?' focused':'');tick.style.left=x+'px';tick.textContent=y; els.yearAxis.appendChild(tick);
+      const grid=document.createElement('i');grid.className='year-grid'+(focused?' focused':'');grid.style.left=x+'px';els.genreBands.appendChild(grid);
     }
     GENRES.forEach(g=>{const band=document.createElement('div');band.className='genre-band';band.style.background=g.bg;els.genreBands.appendChild(band);});
+    if(d.focusStart!==null){const focus=document.createElement('i');focus.className='decade-focus-band';focus.style.left=xForYear(d.focusStart,d)+'px';focus.style.width=(xForYear(d.focusEnd,d)-xForYear(d.focusStart,d))+'px';els.genreBands.appendChild(focus);}
     els.edgeLayer.setAttribute('width',d.width);els.edgeLayer.setAttribute('height',d.height);els.edgeLayer.style.width=d.width+'px';els.edgeLayer.style.height=d.height+'px';
   }
 
@@ -183,13 +199,13 @@
       const isFeatured=album.featured || connected.has(album.id) || album.id===selectedAlbumId || (searchActive && idx<80);
       nodePositions.set(album.id,{x,y,album,isFeatured});
       if(isFeatured){
-        const n=document.createElement('div'); n.className='album-node'+(!yi.resolved?' unresolved':'')+(album.id===selectedAlbumId?' selected':''); n.style.left=x+'px';n.style.top=y+'px';n.dataset.id=album.id;n.title=`${albumLabel(album)}\n${yi.year||'年不明'} / ${yi.source}`;
+        const n=document.createElement('div'); n.className='album-node'+(!yi.resolved?' unresolved':'')+(album.id===selectedAlbumId?' selected':'')+(!yearIsFocused(year)?' context-node':''); n.style.left=x+'px';n.style.top=y+'px';n.dataset.id=album.id;n.title=`${albumLabel(album)}\n${yi.year||'年不明'} / ${yi.source}`;
         const tile=document.createElement('div');tile.className='art-tile'; buildArtwork(tile,album);
         const dot=document.createElement('i');dot.className='year-source-dot'+(yi.resolved?'':' csv');dot.title=yi.resolved?'初版年確定':'CSV年を暫定利用';tile.appendChild(dot);
         const cap=document.createElement('div');cap.className='album-caption';cap.textContent=album.title;
         n.append(tile,cap);n.addEventListener('click',(ev)=>{ev.stopPropagation();selectAlbum(album.id,null);});frag.appendChild(n);
       } else {
-        const dot=document.createElement('button');dot.className='album-dot';dot.style.left=x+'px';dot.style.top=y+'px';dot.style.background=g.color;dot.setAttribute('aria-label',albumLabel(album));dot.title=`${albumLabel(album)}\n${yi.year||'年不明'} / ${yi.source}`;dot.addEventListener('click',(ev)=>{ev.stopPropagation();selectAlbum(album.id,null);});frag.appendChild(dot);
+        const dot=document.createElement('button');dot.className='album-dot'+(!yearIsFocused(year)?' context-node':'');dot.style.left=x+'px';dot.style.top=y+'px';dot.style.background=g.color;dot.setAttribute('aria-label',albumLabel(album));dot.title=`${albumLabel(album)}\n${yi.year||'年不明'} / ${yi.source}`;dot.addEventListener('click',(ev)=>{ev.stopPropagation();selectAlbum(album.id,null);});frag.appendChild(dot);
       }
     });
     els.nodeLayer.appendChild(frag);
@@ -250,8 +266,13 @@
     return bestScore>=45?best:null;
   }
 
+  const RELATION_LABELS={influence:'影響',lineage:'直接系譜',member:'メンバー参加',personnel:'演奏参加',collaboration:'共同制作',production:'制作参加','shared-member':'共通メンバー',reinterpretation:'カバー／再解釈',tribute:'参照・トリビュート'};
+  function relationLabel(edge){return RELATION_LABELS[edge.kind]||RELATION_LABELS[edge.scope]||'影響';}
   function edgeColor(e){ return e.reliabilityBand==='high'?'#f2a20a':e.reliabilityBand==='medium'?'#2f7df0':'#a5acb8'; }
   function edgeWidth(e){ return 0.8+Number(e.strength||1)*0.75; }
+  function scrollEvidenceIntoView(){requestAnimationFrame(()=>els.evidenceBox.scrollIntoView({behavior:'smooth',block:'nearest'}));}
+  function focusEdgeEvidence(edge){selectedEdgeId=edge.id;renderEvidence(edge);renderEdges(plotDimensions());scrollEvidenceIntoView();}
+  function openEdgeDetails(edge,to){selectedEdgeId=edge.id;selectAlbum(to.id,edge.id);scrollEvidenceIntoView();}
   function renderEdges(d){
     els.edgeLayer.innerHTML=''; if(!networkEnabled) return;
     const visibleSet=new Set(visibleAlbums.map(a=>a.id));
@@ -264,10 +285,10 @@
       const dx=Math.max(50,Math.abs(p2.x-p1.x)*0.42);const direction=p2.x>=p1.x?1:-1;const bend=((hash(edge.id)%3)-1)*18;
       const pathD=`M ${p1.x} ${p1.y} C ${p1.x+direction*dx} ${p1.y+bend}, ${p2.x-direction*dx} ${p2.y-bend}, ${p2.x} ${p2.y}`;
       const group=document.createElementNS(ns,'g');group.classList.add('edge-group');group.dataset.edgeId=edge.id;
-      const hit=document.createElementNS(ns,'path');hit.setAttribute('d',pathD);hit.classList.add('edge-hit');
+      const hit=document.createElementNS(ns,'path');hit.setAttribute('d',pathD);hit.classList.add('edge-hit');hit.setAttribute('tabindex','0');hit.setAttribute('role','button');hit.setAttribute('aria-label',`${relationLabel(edge)}: ${edge.from.artist}から${edge.to.artist}。詳細を表示`);
       const path=document.createElementNS(ns,'path');path.setAttribute('d',pathD);path.classList.add('edge-visible');path.setAttribute('stroke',edgeColor(edge));path.setAttribute('stroke-width',edgeWidth(edge));path.setAttribute('marker-end',`url(#arrow-${edge.reliabilityBand})`); if(edge.id===selectedEdgeId){path.setAttribute('opacity','1');path.setAttribute('stroke-width',edgeWidth(edge)+2);}
-      const title=document.createElementNS(ns,'title');title.textContent=`${edge.from.artist} → ${edge.to.artist}\nソース: ${edge.source.publisher}\n信頼度: ${Math.round(edge.reliability*100)}% / 強さ: ${edge.strength.toFixed(1)}`;path.appendChild(title);
-      hit.addEventListener('click',(ev)=>{ev.stopPropagation();selectedEdgeId=edge.id;selectAlbum(to.id,edge.id);});group.append(hit,path);els.edgeLayer.appendChild(group);
+      const title=document.createElementNS(ns,'title');title.textContent=`${relationLabel(edge)}: ${edge.from.artist} → ${edge.to.artist}\n${edge.note}\nソース: ${edge.source.publisher}\n信頼度: ${Math.round(edge.reliability*100)}% / 強さ: ${edge.strength.toFixed(1)}`;path.appendChild(title);
+      const open=(ev)=>{ev.stopPropagation();openEdgeDetails(edge,to);};hit.addEventListener('click',open);hit.addEventListener('keydown',(ev)=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();open(ev);}});group.append(hit,path);els.edgeLayer.appendChild(group);
     });
   }
 
@@ -294,7 +315,7 @@
     els.detailToggle.title=visible?'アルバム詳細を非表示にする':'アルバム詳細を表示する';
     if(returnFocus) els.detailToggle.focus();
   }
-  function selectAlbum(id,edgeId){ selectedAlbumId=id;if(edgeId!==undefined&&edgeId!==null)selectedEdgeId=edgeId;setDetailPanelVisible(true);renderAll();renderDetail();const a=collection.find(x=>x.id===id);if(a&&needsEnrichment(a)) enrichSingle(a,true); }
+  function selectAlbum(id,edgeId){ selectedAlbumId=id;if(edgeId!==undefined)selectedEdgeId=edgeId;setDetailPanelVisible(true);renderAll();renderDetail();const a=collection.find(x=>x.id===id);if(a&&needsEnrichment(a)) enrichSingle(a,true); }
   function closeDetail(){setDetailPanelVisible(false,{returnFocus:true});}
 
   function renderDetail(){
@@ -309,11 +330,11 @@
     els.relationList.innerHTML=''; const rels=[];
     INFLUENCES.forEach(e=>{const f=findAlbumForRef(e.from),t=findAlbumForRef(e.to);if(f?.id===album.id||t?.id===album.id) rels.push({edge:e,from:f,to:t});});
     if(!rels.length){const p=document.createElement('div');p.className='relation-item';p.textContent='現在の根拠データには接続がありません。';els.relationList.appendChild(p);return;}
-    rels.forEach(({edge,from,to})=>{const div=document.createElement('div');div.className='relation-item';const outgoing=from?.id===album.id;const direction=edge.scope==='lineage'?(outgoing?'直接系譜':'前身・所属元'):(outgoing?'影響を与えた':'影響を受けた');const other=outgoing?to:from;const a=document.createElement('div');a.className='relation-arrow';a.textContent=`${direction} → ${other?other.artist:'不明'} / ${other?other.title:''}`;const m=document.createElement('div');m.className='relation-meta';const dot=document.createElement('span');dot.className='dot-badge';dot.style.background=edgeColor(edge);const t=document.createElement('span');t.textContent=`${edge.scope==='lineage'?'直接系譜':'影響'} ・ ${edge.source.publisher} ・ 信頼度 ${Math.round(edge.reliability*100)}% ・ 強さ ${edge.strength.toFixed(1)}`;m.append(dot,t);div.append(a,m);div.addEventListener('click',()=>{selectedEdgeId=edge.id;renderEvidence(edge);renderAll();});els.relationList.appendChild(div);});
+    rels.forEach(({edge,from,to})=>{const div=document.createElement('div');div.className='relation-item';const outgoing=from?.id===album.id;const other=outgoing?to:from;const a=document.createElement('div');a.className='relation-arrow';a.textContent=`${relationLabel(edge)} ${outgoing?'→':'←'} ${other?other.artist:'不明'} / ${other?other.title:''}`;const m=document.createElement('div');m.className='relation-meta';const dot=document.createElement('span');dot.className='dot-badge';dot.style.background=edgeColor(edge);const t=document.createElement('span');t.textContent=`${edge.source.publisher} ・ 信頼度 ${Math.round(edge.reliability*100)}% ・ 強さ ${edge.strength.toFixed(1)}`;m.append(dot,t);div.append(a,m);div.addEventListener('click',()=>focusEdgeEvidence(edge));els.relationList.appendChild(div);});
   }
 
   function renderEvidence(edge){
-    if(!edge){els.evidenceBox.classList.add('hidden');return;}els.evidenceBox.classList.remove('hidden');els.evidenceReliability.className='reliability-badge '+edge.reliabilityBand;els.evidenceReliability.textContent=`ソース信頼度 ${Math.round(edge.reliability*100)}%`;els.evidenceRelation.textContent=`${edge.from.artist} → ${edge.to.artist}`;els.evidenceNote.textContent=edge.note;els.strengthFill.style.width=`${Math.min(100,(edge.strength/5)*100)}%`;els.strengthValue.textContent=edge.strength.toFixed(1);els.evidenceLink.href=edge.source.url;els.evidenceLink.textContent=`${edge.source.publisher}: ${edge.source.title} ↗`;
+    if(!edge){els.evidenceBox.classList.add('hidden');return;}els.evidenceBox.classList.remove('hidden');els.evidenceReliability.className='reliability-badge '+edge.reliabilityBand;els.evidenceReliability.textContent=`ソース信頼度 ${Math.round(edge.reliability*100)}%`;els.evidenceRelation.textContent=`${relationLabel(edge)}｜${edge.from.artist} → ${edge.to.artist}`;els.evidenceNote.textContent=edge.note;els.strengthFill.style.width=`${Math.min(100,(edge.strength/5)*100)}%`;els.strengthValue.textContent=edge.strength.toFixed(1);els.evidenceLink.href=edge.source.url;els.evidenceLink.textContent=`${edge.source.publisher}: ${edge.source.title} ↗`;
   }
 
   function luceneEscape(s){ return String(s||'').replace(/[+\-!(){}\[\]^"~*?:\\/]/g,' ').replace(/\s+/g,' ').trim(); }

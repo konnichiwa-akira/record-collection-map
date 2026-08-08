@@ -6,7 +6,7 @@
   <meta name="color-scheme" content="light" />
   <title>レコードコレクション・マップ</title>
   <meta name="description" content="Discogsコレクションを初版発売年×ジャンルで可視化し、影響関係をネットワーク表示するローカルWebアプリ" />
-  <link rel="stylesheet" href="styles.css?v=20260808-3" />
+  <link rel="stylesheet" href="styles.css?v=20260808-4" />
 </head>
 <body>
   <div class="app-shell" id="appShell">
@@ -45,7 +45,7 @@
       </section>
 
       <section class="toolbar-row">
-        <div id="decadeFilters" class="chips" aria-label="年代フィルター"></div>
+        <div id="decadeFilters" class="chips" aria-label="年代フォーカス"></div>
         <div class="toolbar-actions">
           <button id="enrichButton" class="secondary-button" type="button">初版年・アートワークを補完</button>
           <span id="enrichStatus" class="status-text"></span>
@@ -56,7 +56,7 @@
         <div class="chart-header">
           <div>
             <h2>Collection Timeline</h2>
-            <p>点 = 所有レコード / 大きいカード = 代表表示。破線枠は初版年未照合のためCSV年を暫定利用。</p>
+            <p>点 = 所有レコード / 大きいカード = 代表表示。年代ボタンは対象期間を拡大し、前後の年代も残します。線をクリックすると根拠を表示します。</p>
           </div>
           <div class="chart-mini-actions">
             <button id="zoomOut" aria-label="縮小">−</button><span id="zoomLabel">100%</span><button id="zoomIn" aria-label="拡大">＋</button>
@@ -76,10 +76,10 @@
         </div>
 
         <div class="legend-bar">
-          <div class="legend-title"><strong>つながりネットワーク</strong><span>影響 + 改名・メンバー移行などの直接系譜</span></div>
+          <div class="legend-title"><strong>つながりネットワーク</strong><span>影響・メンバー参加・演奏参加・共同制作・直接系譜</span></div>
           <div class="legend-group"><span>線の色 = ソースの確からしさ</span><i class="line-sample high"></i>高 <i class="line-sample medium"></i>中 <i class="line-sample low"></i>低</div>
           <div class="legend-group"><span>線の太さ = 結びつきの強さ</span><i class="weight-sample strong"></i>強 <i class="weight-sample mid"></i>中 <i class="weight-sample weak"></i>弱</div>
-          <div class="legend-note">※ 現在のネットワークは、信頼できる公開ソースの「アーティスト影響関係」をコレクション内の代表アルバムへ対応付けたものを含みます。</div>
+          <div class="legend-note">※ 線は公開ソースで確認できる影響、在籍、演奏・制作参加、共同プロジェクトを、コレクション内の代表アルバムへ対応付けています。線をクリックすると詳細と出典を確認できます。</div>
         </div>
       </section>
     </main>
@@ -108,7 +108,7 @@
           <div id="relationList" class="relation-list"></div>
         </div>
         <div class="detail-section evidence-box hidden" id="evidenceBox">
-          <div class="evidence-top"><h4>選択した線の根拠</h4><span id="evidenceReliability" class="reliability-badge"></span></div>
+          <div class="evidence-top"><h4>選択した線の詳細・根拠</h4><span id="evidenceReliability" class="reliability-badge"></span></div>
           <p id="evidenceRelation" class="evidence-relation"></p>
           <p id="evidenceNote" class="evidence-note"></p>
           <div class="evidence-strength"><span>結びつきの強さ</span><div class="strength-track"><i id="strengthFill"></i></div><b id="strengthValue"></b></div>
@@ -121,8 +121,8 @@
   <input id="csvFileInput" type="file" accept=".csv,text/csv" hidden />
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="data/collection.js?v=20260808-3"></script>
-  <script src="data/influences.js?v=20260808-3"></script>
-  <script src="app.js?v=20260808-3"></script>
+  <script src="data/collection.js?v=20260808-4"></script>
+  <script src="data/influences.js?v=20260808-4"></script>
+  <script src="app.js?v=20260808-4"></script>
 </body>
 </html>

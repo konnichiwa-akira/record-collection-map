@@ -1,6 +1,6 @@
 # つながりネットワーク Sources
 
-線色はソース信頼度、線幅は結びつき強度を表します。`scope=artist` はアーティスト単位の影響関係をコレクション内の代表アルバムへ対応付けたもの、`scope=lineage` は改名・メンバー移行・ソロ活動などの直接系譜です。
+線色はソース信頼度、線幅は結びつき強度を表します。`scope=artist` はアーティスト単位の影響関係、`scope=lineage` は直接系譜です。追加の `kind` でメンバー在籍、演奏参加、共同制作、制作参加、共通メンバー、再解釈、トリビュートを区別しています。いずれもコレクション内の代表アルバムへ対応付けています。
 
 | ID | From | To | Scope | Reliability | Strength | Source |
 |---|---|---|---|---:|---:|---|
@@ -58,6 +58,27 @@
 | inf-052 | The Beatles — Sgt. Pepper's Lonely Hearts Club Band | Earth, Wind & Fire — All 'N All | artist | 92% | 3.5 | [Rock & Roll Hall of Fame: Earth, Wind & Fire — Influence](https://rockhall.com/inductees/earth-wind-and-fire/) |
 | inf-053 | Funkadelic — Funkadelic | Earth, Wind & Fire — All 'N All | artist | 92% | 4.0 | [Rock & Roll Hall of Fame: Earth, Wind & Fire — Influence](https://rockhall.com/inductees/earth-wind-and-fire/) |
 | inf-054 | Warsaw — Warsaw | Joy Division — Unknown Pleasures | lineage | 98% | 5.0 | [Joy Division Official: About Joy Division](https://www.joydivisionofficial.com/aboutus.html) |
+| inf-055 | Miles Davis — Miles Davis At Plugged Nickel, Chicago | Herbie Hancock — Head Hunters | member | 99% | 5.0 | [Miles Davis Official: Herbie Hancock](https://www.milesdavis.com/person/herbie-hancock/) |
+| inf-056 | Miles Davis — Kind Of Blue | The Bill Evans Trio — Portrait In Jazz | personnel | 99% | 5.0 | [Miles Davis Official: Kind of Blue recording](https://www.milesdavis.com/news/60-years-ago-miles-davis-completes-kind-of-blue/) |
+| inf-057 | Herbie Hancock — Head Hunters | Freddie Hubbard — Red Clay | personnel | 99% | 4.7 | [Freddie Hubbard Official: Red Clay personnel](https://freddiehubbardmusic.com/products/red-clay-discography) |
+| inf-058 | Chet Baker — She Was Too Good To Me | Jim Hall — Concierto | personnel | 98% | 4.6 | [Jim Hall Official: Concierto](https://www.jimhalljazz.com/recordings-jim-hall-leader/) |
+| inf-059 | Weather Report — Heavy Weather | Jaco Pastorius — Jaco Pastorius | member | 97% | 5.0 | [Smithsonian Folkways: Smithsonian Anthology of Jazz](https://folkways-media.si.edu/docs/folkways/artwork/SFW40820.pdf) |
+| inf-060 | Miles Davis — Live-Evil | Weather Report — Heavy Weather | lineage | 96% | 4.8 | [Smithsonian Folkways: Smithsonian Anthology of Jazz](https://folkways-media.si.edu/docs/folkways/artwork/SFW40820.pdf) |
+| inf-061 | Sons Of Kemet — Your Queen Is A Reptile | The Comet Is Coming — Hyper-Dimensional Expansion Beam | shared-member | 98% | 4.9 | [Impulse! Records: Shabaka Hutchings groups](https://www.impulserecords.com/home/) |
+| inf-062 | Miles Davis — Live-Evil | London Brew — London Brew | tribute | 97% | 4.8 | [Concord Jazz: London Brew official press release](https://mediakits.concord.com/p/london-brew/out-now---us-press-release.html) |
+| inf-063 | Joe Armon-Jones — All The Quiet (Part I) | Ezra Collective — Where I’m Meant To Be | member | 99% | 5.0 | [Joe Armon-Jones Official: About](https://joearmonjones.com/about?lang=en_US) |
+| inf-064 | Kamasi Washington — Fearless Movement | Dinner Party — Dinner Party: Dessert | member | 99% | 5.0 | [Kamasi Washington Official: Biography](https://www.kamasiwashington.com/bio/) |
+| inf-065 | Robert Glasper — Black Radio III | Dinner Party — Dinner Party: Dessert | member | 99% | 5.0 | [Kamasi Washington Official: Biography](https://www.kamasiwashington.com/bio/) |
+| inf-066 | Herbie Hancock — Head Hunters | Dinner Party — Dinner Party: Dessert | personnel | 96% | 4.6 | [Apple Music: Dinner Party: Dessert](https://music.apple.com/us/album/dinner-party-dessert/1532831504) |
+| inf-067 | Herbie Hancock — Head Hunters | DOMi & JD BECK — Not Tight | collaboration | 96% | 4.4 | [Blue Note Records: DOMi & JD BECK](https://www.bluenote.com/artist/domi-jd-beck/) |
+| inf-068 | Bruno Mars — Unorthodox Jukebox | DOMi & JD BECK — Not Tight | collaboration | 95% | 3.9 | [Blue Note Records: DOMi & JD BECK](https://www.bluenote.com/artist/domi-jd-beck/) |
+| inf-069 | A Tribe Called Quest — The Low End Theory | J Dilla — Donuts | production | 99% | 5.0 | [J Dilla Estate: Biography](https://www.jdilla.com/catalog/biography.html) |
+| inf-070 | J Dilla — Donuts | Erykah Badu — Apple Tree | production | 99% | 4.8 | [J Dilla Estate: Biography](https://www.jdilla.com/catalog/biography.html) |
+| inf-071 | J Dilla — Donuts | Common — Resurrection | production | 99% | 4.8 | [J Dilla Estate: Biography](https://www.jdilla.com/catalog/biography.html) |
+| inf-072 | Erykah Badu — Apple Tree | Sam Gendel — Cookup | reinterpretation | 97% | 3.8 | [Nonesuch Records: COOKUP announcement](https://www.nonesuch.com/journal/sam-gendel-album-cookup-hit-rb-soul-songs-february-24-nonesuch-2023-01-19) |
+| inf-073 | Funkadelic — Funkadelic | Kamasi Washington — Fearless Movement | collaboration | 97% | 4.1 | [Kamasi Washington Official: Fearless Movement](https://www.kamasiwashington.com/bio/) |
+| inf-074 | J Dilla — Donuts | Robert Glasper — Black Radio III | artist | 88% | 4.3 | [TIDAL Magazine: Robert Glasper in Conversation](https://tidal.com/magazine/article/glasper-conversation/1-83525/) |
+| inf-075 | J Dilla — Donuts | Joe Armon-Jones — All The Quiet (Part I) | artist | 86% | 3.9 | [Huck Magazine: Joe Armon-Jones](https://www.huckmag.com/article/analogue-appreciation-joe-armon-jones-all-the-quiet) |
 
 ## 注記
 
@@ -115,3 +136,7 @@
 - **inf-052**: Rock Hall lists the Beatles among Earth, Wind & Fire’s influences.
 - **inf-053**: Rock Hall lists Parliament-Funkadelic among Earth, Wind & Fire’s influences; Funkadelic is the representative collection node.
 - **inf-054**: Direct band lineage: the official history records the group’s early Warsaw name before it became Joy Division.
+
+- **inf-055–060**: Miles Davis周辺、Herbie Hancock、Freddie Hubbard、Weather Report、Jaco Pastorius、Chet Baker、Jim Hallについて、バンド在籍・録音参加を区別して追加。
+- **inf-061–068**: 2010年代以降のJazzを中心に、Shabaka Hutchings、London Brew、Ezra Collective、Dinner Party、DOMi & JD BECKの共通メンバー／共同制作を追加。
+- **inf-069–075**: J DillaのThe Ummah参加、Erykah Badu／Commonへの制作、Robert Glasper／Joe Armon-Jonesへの影響、およびSam Gendelによる再解釈を追加。

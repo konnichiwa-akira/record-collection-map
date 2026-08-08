@@ -322,5 +322,131 @@ window.INFLUENCE_DATA = [
     strength:5.0, reliability:0.98, reliabilityBand:'high', scope:'lineage',
     source:{publisher:'Joy Division Official',title:'About Joy Division',url:'https://www.joydivisionofficial.com/aboutus.html'},
     note:'Direct band lineage: the official history records the group’s early Warsaw name before it became Joy Division.'
+  },
+  {
+    id:'inf-055', from:{artist:'Miles Davis',title:'Miles Davis At Plugged Nickel, Chicago'}, to:{artist:'Herbie Hancock',title:'Head Hunters'},
+    strength:5.0, reliability:0.99, reliabilityBand:'high', scope:'personnel', kind:'member',
+    source:{publisher:'Miles Davis Official',title:'Herbie Hancock — Miles Davis collaborator',url:'https://www.milesdavis.com/person/herbie-hancock/'},
+    note:'ハービー・ハンコックは1960年代のマイルス・デイヴィス・クインテットの中核メンバー。バンド在籍に基づく直接的な人物関係。'
+  },
+  {
+    id:'inf-056', from:{artist:'Miles Davis',title:'Kind Of Blue'}, to:{artist:'The Bill Evans Trio',title:'Portrait In Jazz'},
+    strength:5.0, reliability:0.99, reliabilityBand:'high', scope:'personnel', kind:'personnel',
+    source:{publisher:'Miles Davis Official',title:'60 Years Ago: Miles Davis Completes Kind of Blue',url:'https://www.milesdavis.com/news/60-years-ago-miles-davis-completes-kind-of-blue/'},
+    note:'ビル・エヴァンスは「Kind of Blue」の録音にピアニストとして参加。コレクション上ではThe Bill Evans Trioの作品を代表ノードとして接続。'
+  },
+  {
+    id:'inf-057', from:{artist:'Herbie Hancock',title:'Head Hunters'}, to:{artist:'Freddie Hubbard',title:'Red Clay'},
+    strength:4.7, reliability:0.99, reliabilityBand:'high', scope:'personnel', kind:'personnel',
+    source:{publisher:'Freddie Hubbard Official',title:'Red Clay — personnel',url:'https://freddiehubbardmusic.com/products/red-clay-discography'},
+    note:'フレディ・ハバード公式ディスコグラフィーは「Red Clay」にハービー・ハンコックがエレクトリック・ピアノ／オルガンで参加したことを記載。'
+  },
+  {
+    id:'inf-058', from:{artist:'Chet Baker',title:'She Was Too Good To Me = 枯葉'}, to:{artist:'Jim Hall',title:'Concierto'},
+    strength:4.6, reliability:0.98, reliabilityBand:'high', scope:'personnel', kind:'personnel',
+    source:{publisher:'Jim Hall Official',title:'Jim Hall recordings — Concierto',url:'https://www.jimhalljazz.com/recordings-jim-hall-leader/'},
+    note:'ジム・ホール公式ディスコグラフィーは「Concierto」のトランペット奏者としてチェット・ベイカーを明記。'
+  },
+  {
+    id:'inf-059', from:{artist:'Weather Report',title:'Heavy Weather'}, to:{artist:'Jaco Pastorius',title:'Jaco Pastorius'},
+    strength:5.0, reliability:0.97, reliabilityBand:'high', scope:'personnel', kind:'member',
+    source:{publisher:'Smithsonian Folkways',title:'Smithsonian Anthology of Jazz — Weather Report personnel',url:'https://folkways-media.si.edu/docs/folkways/artwork/SFW40820.pdf'},
+    note:'「Heavy Weather」期のウェザー・リポートでジャコ・パストリアスがベース／マンドチェロを担当。バンド在籍の直接関係。'
+  },
+  {
+    id:'inf-060', from:{artist:'Miles Davis',title:'Live-Evil'}, to:{artist:'Weather Report',title:'Heavy Weather'},
+    strength:4.8, reliability:0.96, reliabilityBand:'high', scope:'lineage', kind:'lineage',
+    source:{publisher:'Smithsonian Folkways',title:'Smithsonian Anthology of Jazz — Weather Report lineage',url:'https://folkways-media.si.edu/docs/folkways/artwork/SFW40820.pdf'},
+    note:'ウェザー・リポートを結成したウェイン・ショーターとジョー・ザヴィヌルはいずれもマイルスの電化期に参加。バンド形成へ続く直接系譜。'
+  },
+  {
+    id:'inf-061', from:{artist:'Sons Of Kemet',title:'Your Queen Is A Reptile'}, to:{artist:'The Comet Is Coming',title:'Hyper-Dimensional Expansion Beam'},
+    strength:4.9, reliability:0.98, reliabilityBand:'high', scope:'personnel', kind:'shared-member',
+    source:{publisher:'Impulse! Records',title:'Impulse! artists and Shabaka Hutchings groups',url:'https://www.impulserecords.com/home/'},
+    note:'両グループはサックス奏者シャバカ・ハッチングスを共有する。レーベル公式紹介がSons of KemetとThe Comet Is Comingを彼のグループとして併記。'
+  },
+  {
+    id:'inf-062', from:{artist:'Miles Davis',title:'Live-Evil'}, to:{artist:'London Brew',title:'London Brew'},
+    strength:4.8, reliability:0.97, reliabilityBand:'high', scope:'artist', kind:'tribute',
+    source:{publisher:'Concord Jazz',title:'London Brew — official press release',url:'https://mediakits.concord.com/p/london-brew/out-now---us-press-release.html'},
+    note:'「London Brew」はマイルス・デイヴィスの「Bitches Brew」に触発された現代ロンドン・ジャズのプロジェクト。'
+  },
+  {
+    id:'inf-063', from:{artist:'Joe Armon-Jones',title:'All The Quiet (Part I)'}, to:{artist:'Ezra Collective',title:'Where I’m Meant To Be'},
+    strength:5.0, reliability:0.99, reliabilityBand:'high', scope:'personnel', kind:'member',
+    source:{publisher:'Joe Armon-Jones Official',title:'About Joe Armon-Jones',url:'https://joearmonjones.com/about?lang=en_US'},
+    note:'ジョー・アーモン＝ジョーンズはソロ活動と並行してEzra Collectiveのメンバーとして活動。'
+  },
+  {
+    id:'inf-064', from:{artist:'Kamasi Washington',title:'フィアレス・ムーヴメント'}, to:{artist:'Dinner Party',title:'Dinner Party: Dessert'},
+    strength:5.0, reliability:0.99, reliabilityBand:'high', scope:'personnel', kind:'member',
+    source:{publisher:'Kamasi Washington Official',title:'Kamasi Washington — biography',url:'https://www.kamasiwashington.com/bio/'},
+    note:'カマシ・ワシントンはRobert Glasper、Terrace Martin、9th WonderとDinner Partyを結成したメンバー。'
+  },
+  {
+    id:'inf-065', from:{artist:'Robert Glasper',title:'Black Radio III'}, to:{artist:'Dinner Party',title:'Dinner Party: Dessert'},
+    strength:5.0, reliability:0.99, reliabilityBand:'high', scope:'personnel', kind:'member',
+    source:{publisher:'Kamasi Washington Official',title:'Kamasi Washington — biography',url:'https://www.kamasiwashington.com/bio/'},
+    note:'ロバート・グラスパーはカマシ・ワシントン、Terrace Martin、9th WonderとDinner Partyを構成するメンバー。'
+  },
+  {
+    id:'inf-066', from:{artist:'Herbie Hancock',title:'Head Hunters'}, to:{artist:'Dinner Party',title:'Dinner Party: Dessert'},
+    strength:4.6, reliability:0.96, reliabilityBand:'high', scope:'personnel', kind:'personnel',
+    source:{publisher:'Apple Music',title:'Dinner Party: Dessert — album credits and notes',url:'https://music.apple.com/us/album/dinner-party-dessert/1532831504'},
+    note:'ハービー・ハンコックは「Dinner Party: Dessert」の“The Mighty Tree”にピアノで参加。'
+  },
+  {
+    id:'inf-067', from:{artist:'Herbie Hancock',title:'Head Hunters'}, to:{artist:'DOMi & JD BECK',title:'Not Tight'},
+    strength:4.4, reliability:0.96, reliabilityBand:'high', scope:'personnel', kind:'collaboration',
+    source:{publisher:'Blue Note Records',title:'DOMi & JD BECK — biography',url:'https://www.bluenote.com/artist/domi-jd-beck/'},
+    note:'Blue Note公式プロフィールはDOMi & JD BECKがハービー・ハンコックと共演してきたことを記載し、「NOT TiGHT」のゲストにも挙げている。'
+  },
+  {
+    id:'inf-068', from:{artist:'Bruno Mars',title:'Unorthodox Jukebox'}, to:{artist:'DOMi & JD BECK',title:'Not Tight'},
+    strength:3.9, reliability:0.95, reliabilityBand:'high', scope:'personnel', kind:'collaboration',
+    source:{publisher:'Blue Note Records',title:'DOMi & JD BECK — biography',url:'https://www.bluenote.com/artist/domi-jd-beck/'},
+    note:'DOMi & JD BECKはブルーノ・マーズとAnderson .PaakによるSilk Sonicの“Skate”を共同作曲。作品を越えた制作参加として接続。'
+  },
+  {
+    id:'inf-069', from:{artist:'A Tribe Called Quest',title:'The Low End Theory'}, to:{artist:'J Dilla',title:'Donuts'},
+    strength:5.0, reliability:0.99, reliabilityBand:'high', scope:'personnel', kind:'production',
+    source:{publisher:'J Dilla Estate',title:'J Dilla biography — The Ummah',url:'https://www.jdilla.com/catalog/biography.html'},
+    note:'J DillaはQ-Tip、Ali Shaheed Muhammadと制作チームThe Ummahを組み、A Tribe Called Questの制作に参加。'
+  },
+  {
+    id:'inf-070', from:{artist:'J Dilla',title:'Donuts'}, to:{artist:'Erykah Badu',title:'Apple Tree'},
+    strength:4.8, reliability:0.99, reliabilityBand:'high', scope:'personnel', kind:'production',
+    source:{publisher:'J Dilla Estate',title:'J Dilla biography — production credits',url:'https://www.jdilla.com/catalog/biography.html'},
+    note:'J Dillaはエリカ・バドゥの“Didn’t Cha Know”を制作し、同曲でグラミー候補となった。アーティスト単位の制作関係。'
+  },
+  {
+    id:'inf-071', from:{artist:'J Dilla',title:'Donuts'}, to:{artist:'Common',title:'Resurrection'},
+    strength:4.8, reliability:0.99, reliabilityBand:'high', scope:'personnel', kind:'production',
+    source:{publisher:'J Dilla Estate',title:'J Dilla biography — production credits',url:'https://www.jdilla.com/catalog/biography.html'},
+    note:'J DillaはCommonの“The Light”を制作。コレクション内ではCommonの代表アルバムへアーティスト単位で接続。'
+  },
+  {
+    id:'inf-072', from:{artist:'Erykah Badu',title:'Apple Tree'}, to:{artist:'Sam Gendel',title:'Cookup'},
+    strength:3.8, reliability:0.97, reliabilityBand:'high', scope:'artist', kind:'reinterpretation',
+    source:{publisher:'Nonesuch Records',title:'Sam Gendel — COOKUP announcement',url:'https://www.nonesuch.com/journal/sam-gendel-album-cookup-hit-rb-soul-songs-february-24-nonesuch-2023-01-19'},
+    note:'サム・ゲンデルは「COOKUP」でエリカ・バドゥの“Didn’t Cha Know”を再解釈。カバー／再構築の関係。'
+  },
+  {
+    id:'inf-073', from:{artist:'Funkadelic',title:'Funkadelic'}, to:{artist:'Kamasi Washington',title:'フィアレス・ムーヴメント'},
+    strength:4.1, reliability:0.97, reliabilityBand:'high', scope:'personnel', kind:'collaboration',
+    source:{publisher:'Kamasi Washington Official',title:'Kamasi Washington — Fearless Movement biography',url:'https://www.kamasiwashington.com/bio/'},
+    note:'Funkadelicの中心人物ジョージ・クリントンがカマシ・ワシントンの“Get Lit”に参加。Funkadelicを代表ノードとして接続。'
+  },
+  {
+    id:'inf-074', from:{artist:'J Dilla',title:'Donuts'}, to:{artist:'Robert Glasper',title:'Black Radio III'},
+    strength:4.3, reliability:0.88, reliabilityBand:'medium', scope:'artist', kind:'influence',
+    source:{publisher:'TIDAL Magazine',title:'Black Radio Returns: Robert Glasper in Conversation',url:'https://tidal.com/magazine/article/glasper-conversation/1-83525/'},
+    note:'ロバート・グラスパーはJ Dillaの21世紀音楽への重要性を語り、自身の演奏・制作感覚における影響を明示している。'
+  },
+  {
+    id:'inf-075', from:{artist:'J Dilla',title:'Donuts'}, to:{artist:'Joe Armon-Jones',title:'All The Quiet (Part I)'},
+    strength:3.9, reliability:0.86, reliabilityBand:'medium', scope:'artist', kind:'influence',
+    source:{publisher:'Huck Magazine',title:'Analogue Appreciation: Joe Armon-Jones',url:'https://www.huckmag.com/article/analogue-appreciation-joe-armon-jones-all-the-quiet'},
+    note:'ジョー・アーモン＝ジョーンズは所持金を使い切ってJ Dillaの希少リミックス盤を買った経験を語っており、継続的な音楽的参照を示す。'
   }
 ];
